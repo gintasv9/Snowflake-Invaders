@@ -31,7 +31,7 @@ class HighScoreWindow : Window
 
 
         _highScoreText = new TextBlock(1, 2, 100, highScoreMsg);
-        _playerScores = new TextBlock((100 - 50) / 2, 11, 50, GetHighScore());
+        _playerScores = new TextBlock((100 - 50) / 2, 11, 50, GetScoreList());
 
         _availableButtons.Add(new Button(8, 15, 7, 20, "Back to menu"));
         _availableButtons.Add(new Button(72, 15, 7, 20, "Exit game"));
@@ -76,20 +76,9 @@ class HighScoreWindow : Window
         return _currentButtonActive;
     }
 
-    public List<string> GetHighScore()
+    private List<string> GetScoreList()
     {
-        List<string> highScoreList = new List<string>();
-        string line;
-
-        StreamReader file = new StreamReader(Directory.GetCurrentDirectory() + @"\Game Data\High_score.txt");
-
-        while ((line = file.ReadLine()) != null)
-        {
-            highScoreList.Add(line);
-        }
-
-        file.Close();
-        return highScoreList;
+        HighScoreManager hsm = new HighScoreManager();
+        return hsm.GetHighScore();
     }
-
 }

@@ -25,7 +25,7 @@ class GameWindow
         _scoreFrame = new Frame(0, height + 4, 9, width + 1, '█');
 
         Console.SetWindowSize(_screenWidth + 1, _screenHeight + 13);
-        Console.SetBufferSize(_screenWidth + 2, _screenHeight + 13);
+        Console.SetBufferSize(_screenWidth + 1, _screenHeight + 13);
 
         SafeNativeMethods.CenterConsole();
     }
