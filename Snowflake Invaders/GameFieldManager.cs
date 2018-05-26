@@ -71,7 +71,9 @@ class GameFieldManager
             {
                 _bulletList.Add(bullet1);
                 _bulletList.Add(bullet2);
-                _hero.Color = (ConsoleColor)(_rng.Next(1, 14));
+
+                // nuo 2 iki 14: ignore black, dark blue, white due to visibility issues
+                _hero.Color = (ConsoleColor)(_rng.Next(2, 14));
             }
         }
         else

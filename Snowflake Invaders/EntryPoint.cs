@@ -12,14 +12,21 @@ class Program
 
         SoundManager.LoadMusic(@"\Music\M.O.O.N. - 'Hydrogen'.wav");
 
-        SafeNativeMethods.DisableConsoleResize();
-        SafeNativeMethods.CenterConsole();
-        SafeNativeMethods.DisableConsoleMouseClicks();
+        try
+        {
+            SafeNativeMethods.DisableConsoleResize();
+            SafeNativeMethods.CenterConsole();
+            SafeNativeMethods.DisableConsoleMouseClicks();
 
-        HighScoreManager hsm = new HighScoreManager();
-        hsm.CreateHighScoreFile();
+            HighScoreManager hsm = new HighScoreManager();
+            hsm.CreateHighScoreFile();
 
-        GuiController guiController = new GuiController();
-        guiController.ShowMenu();
+            GuiController guiController = new GuiController();
+            guiController.ShowMenu();
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
     }
 }
