@@ -29,13 +29,13 @@ class GameFieldManager
 
     public void AddBosses()
     {
-        // tarpiniai BOSAI
+        // smaller snowflakes
         if (EnemyCount % 5 == 4 || EnemyCount % 5 == 3)
         {
             _enemies.Add(new SnowflakeBoss());
         }
 
-        // raid BOSAI
+        // bigger snowflakes
         if (EnemyCount % 16 == 3)
         {
             _enemies.Add(new SnowflakeRaidBoss());
@@ -59,7 +59,7 @@ class GameFieldManager
                 return enemy;
             }
         }
-        // jeigu nera priesu?
+        // if no such enemy existss
         return null;
     }
 
@@ -72,7 +72,7 @@ class GameFieldManager
                 _bulletList.Add(bullet1);
                 _bulletList.Add(bullet2);
 
-                // nuo 2 iki 14: ignore black, dark blue, white due to visibility issues
+                // from 2 to 14: ignore black, dark blue, white due to visibility issues
                 _hero.Color = (ConsoleColor)(_rng.Next(2, 14));
             }
         }
@@ -117,7 +117,7 @@ class GameFieldManager
         }
     }
 
-    // snaiges trinamos kai pasiekia zeme arba kai susiduria su kulka
+    // melt on collision with border / bullet
     public void MeltSnowflakes()
     {
         for (int i = 0; i < _enemies.Count; i++)
@@ -127,7 +127,7 @@ class GameFieldManager
                 if (((Snowflake)_enemies[i]).GetY() > GameEngine.GameScreenHeight || _ucm.IsEnemyShot(_enemies[i], _bulletList))
                 {
                     _enemies.Remove(_enemies[i]);
-                    // kai pasalinamas priesas, patikrinamas mazesnis indeksas
+                    // upon enemy removal - lower index
                     i--;
 
                     EnemyCount++;
@@ -142,7 +142,6 @@ class GameFieldManager
                 if (((SnowflakeBoss)_enemies[i]).Y > GameEngine.GameScreenHeight)
                 {
                     _enemies.Remove(_enemies[i]);
-                    // kai pasalinamas priesas, patikrinamas mazesnis indeksas
                     i--;
 
                     GameEngine.Score += 2;
@@ -160,7 +159,6 @@ class GameFieldManager
                 if (((SnowflakeRaidBoss)_enemies[i]).Y > GameEngine.GameScreenHeight - 1)
                 {
                     _enemies.Remove(_enemies[i]);
-                    // kai pasalinamas priesas, patikrinamas mazesnis indeksas
                     i--;
 
                     GameEngine.Score += 5;
@@ -178,18 +176,15 @@ class GameFieldManager
 
     public bool CheckForEndgame()
     {
-        // patikrinamas collision
         return _ucm.CheckForCollision(_enemies, _hero);
     }
 
     public void RenderUnits()
     {
-        // balta spalva, renderinamos snowflakes kas 1 eilte:
         GameFieldRenderer gfr = new GameFieldRenderer();
         gfr.SetupGameFieldArray(_enemies, _bulletList, _hero);
         gfr.RenderGameField(ConsoleColor.White);
 
-        // spalvotai renderinami hero ir bullets:
         _hero.PrintToScreen();
 
         foreach (Bullet bullet in _bulletList)

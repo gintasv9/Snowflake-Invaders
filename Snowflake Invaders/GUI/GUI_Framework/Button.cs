@@ -9,7 +9,7 @@
 
     public Button(int x, int y, int height, int width, string buttonText) : base(x, y, height, width)
     {
-        // paduodami parametrai, kad mygtuko tekstas butu centre
+        // button name centering
         _buttonName = new TextLine(x + 2, y + 1 + ((height - 2) / 2), width - 4, buttonText);
 
         _activeFrame = new Frame(x, y, height, width, '▓');

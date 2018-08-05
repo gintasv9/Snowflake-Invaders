@@ -5,12 +5,12 @@ class TextBlock : GuiObject
 {
     private readonly List<TextLine> _textBlocks = new List<TextLine>();
 
-    // kadangi height nera - siunciamas 0
+    // no height - pass 0
     public TextBlock(int x, int y, int width, List<string> text) : base(x, y, 0, width)
     {
         for (int i = 0; i < text.Count; i++)
         {
-            // i textBlocks lista pridedame NAUJUS TextLine; y + 1 -> sekanti konsoles eilute
+            // add TextLine to a new (y + 1) row
             _textBlocks.Add(new TextLine(x, y + i, width, text[i]));
         }
     }

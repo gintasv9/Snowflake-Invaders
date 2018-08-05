@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-// add'inau Forms ir Drawing i references
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 public static class SafeNativeMethods
@@ -12,7 +11,6 @@ public static class SafeNativeMethods
     private const int SC_MAXIMIZE = 0xF030;
     private const int SC_SIZE = 0xF000;
     private const uint ENABLE_QUICK_EDIT = 0x0040;
-    // STD_INPUT_HANDLE (DWORD): -10 is the standard input device.
     private const int STD_INPUT_HANDLE = -10;
 
     internal static void CenterConsole()

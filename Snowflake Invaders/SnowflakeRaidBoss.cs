@@ -17,7 +17,6 @@ class SnowflakeRaidBoss : IEnemy
         int bossXCoord = _rng.Next(2, GameEngine.GameScreenWidth - 7);
         int bossYCoord = 2;
 
-        // pridedamos (17 - 1) snaigiu suformuoja "*" forma su spinduliais
         //  *   *
         //   ***
         // *** ***
@@ -71,7 +70,7 @@ class SnowflakeRaidBoss : IEnemy
             sumOfYCoords += snowflake.MoveDown();
         }
 
-        // Y - snaiges centro Y koordinate
+        // Y - center Y coord of a snowflake
         Y = sumOfYCoords / (SYMBOL_COUNT - 1);
         return sumOfYCoords / (SYMBOL_COUNT - 1);
     }

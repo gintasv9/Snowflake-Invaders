@@ -13,7 +13,7 @@ class TextLine : GuiObject
     {
         Console.SetCursorPosition(_x, _y);
 
-        // jeigu tekstas trumpesnis negu lango plotis - centruoti
+        // center if text length < window width
         if (_width > _data.Length)
         {
             int offset = (_width - _data.Length) / 2;
@@ -30,7 +30,7 @@ class TextLine : GuiObject
     {
         Console.SetCursorPosition(_x, _y);
 
-        // jeigu tekstas trumpesnis negu lango plotis - centruoti
+        // center if text length < window width
         if (_width > _data.Length)
         {
             int offset = (_width - _data.Length) / 2;

@@ -76,7 +76,7 @@ class GameWindow
 
     public void RenderScoreInfo()
     {
-        // whiteSpace - kad nereiktu trinti pries tai buvusio Score ir Level teksto
+        // override pre-frame score with whiteSpace
         string whiteSpace = new string(' ', _screenWidth / 4);
 
         _scoreList = new List<string> { $"{whiteSpace}SCORE: {GameEngine.Score}{whiteSpace}", "", $"{whiteSpace}LEVEL: {GameEngine.Level}{whiteSpace}" };

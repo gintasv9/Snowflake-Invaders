@@ -89,6 +89,7 @@
     <Compile Include="Bullet.cs" />
     <Compile Include="GameFieldManager.cs" />
     <Compile Include="GameFieldRenderer.cs" />
+    <Compile Include="LevelEnum.cs" />
     <Compile Include="Utils\ConsoleUtils.cs" />
     <Compile Include="GUI\ExitWindow.cs" />
     <Compile Include="GUI\GUI_Framework\Button.cs" />

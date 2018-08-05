@@ -12,7 +12,6 @@ class Hero
     private List<HeroChar> _completeHero = new List<HeroChar>();
     private List<UnitCoord> _heroCoordList = new List<UnitCoord>();
 
-    // centrinio char'o koordinates:
     private UnitCoord _centerCoord = new UnitCoord();
 
     public ConsoleColor Color { get; set; }

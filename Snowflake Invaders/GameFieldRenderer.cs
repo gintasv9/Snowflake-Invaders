@@ -35,7 +35,7 @@ class GameFieldRenderer
 
             foreach (var coord in enemyCoords)
             {
-                // '■' - enemy simbolis, NOTE: padaryti scalable
+                // '■' - enemy building block, NOTE: make scalable
                 _currentGameField[coord.X, coord.Y] = '■';
             }
         }
@@ -45,7 +45,7 @@ class GameFieldRenderer
     {
         Console.ForegroundColor = color;
 
-        // row ir col prasideda 2, kad nerenderintu ant virsaus GameWindow frame'o!
+        // row and col start with 2, so that not to override GameWindow frame!
         for (int row = 1; row <= _currentGameField.GetLength(1) - LOWER_GAME_FIELD_BUFFER + 1; row++)
         {
             StringBuilder sb = new StringBuilder();
@@ -56,7 +56,7 @@ class GameFieldRenderer
                 sb.Append(_currentGameField[col, row]);
             }
 
-            // Renderinama po viena eilute
+            // Render line by line
             gameField = sb.ToString();
             Console.SetCursorPosition(2, row);
             Console.Write(gameField);

@@ -20,20 +20,20 @@ static class GameEngine
     {
         SoundManager.LoadMusic(@"\Music\vikce - casse-tête.wav");
 
-        // sukuriam unit manager ir zaidimo langa
+        // Creating unit manager and game window
         unitManager = new GameFieldManager();
         gameField = new GameWindow(GameScreenWidth, GameScreenHeight);
 
-        // reset previous starting score
+        // Reset previous score
         Score = 0;
 
-        // sukuriam Hero ir jo bullet list
+        // Set hero and bullets
         unitManager.SetHero(new Hero(new UnitCoord(GameScreenWidth / 2, GameScreenHeight - 1)));
 
-        // sukuriam enemies
+        // Set enemies
         unitManager.CreateInitialSnowflakes();
 
-        // zaidimas renderinamas
+        // Render game window
         Console.Clear();
         gameField.RenderGameBackground();
         unitManager.RenderUnits();
@@ -42,92 +42,117 @@ static class GameEngine
 
         while (needToRender)
         {
-            // Nustatomas zaidimo lygis ir greitis
             Level = GetLevelAndGameSpeed(Score, out gameSpeed);
 
-            // Pajudinamas herojus
+            // Get hero control input
             ControlUnit();
 
-            // Renderinama
+            // Render
             unitManager.RenderUnits();
             gameField.RenderScoreInfo();
             Thread.Sleep(gameSpeed / 2);
 
-            // Pajudinami priesai
+            // Move enemies
             unitManager.MoveAllBulletsUp();
             unitManager.MoveAllEnemiesDown();
 
-            // Enemies uz ekrano ribu trinami, pridedami nauji enemies
+            // Cycle enemies
             unitManager.MeltSnowflakes();
             unitManager.RemoveBullets();
             unitManager.AddBosses();
 
-            // Renderinama
+            // Render
             unitManager.RenderUnits();
             gameField.RenderScoreInfo();
             Thread.Sleep(gameSpeed / 2);
 
-            // Tikrina ar hero susiduria su enemies:
-            IfGameOver();
+            IsGameOver();
         }
     }
+
+    public static string GetLevel(LevelEnum level)
+    {
+        switch (level)
+        {
+            case LevelEnum.start:
+                return "Summer in Canada";
+            case LevelEnum.first:
+                return "Diamond dust";
+            case LevelEnum.second:
+                return "Snow flurry";
+            case LevelEnum.third:
+                return "Snowsquall";
+            case LevelEnum.fourth:
+                return "Snow storm";
+            case LevelEnum.fifth:
+                return "Blizzard";
+            case LevelEnum.sixth:
+                return "Arctic mayhem!";
+            case LevelEnum.seventh:
+                return "THUNDER SNOW!";
+            case LevelEnum.final:
+                return "»»» ULTRA INSTINCT «««";
+            default:
+                return "";
+        }
+    }
+
     private static string GetLevelAndGameSpeed(int score, out int gameSpeed)
     {
         if (score < 100)
         {
             gameSpeed = 100;
-            return "Summer in Canada";
+            return GetLevel(LevelEnum.start);
         }
         else if (score < 200)
         {
             gameSpeed = 90;
-            return "Diamond dust";
+            return GetLevel(LevelEnum.first);
         }
         else if (score < 300)
         {
             gameSpeed = 80;
-            return "Snow flurry";
+            return GetLevel(LevelEnum.second);
         }
         else if (score < 400)
         {
             gameSpeed = 70;
-            return "Snowsquall";
+            return GetLevel(LevelEnum.third);
         }
         else if (score < 600)
         {
             gameSpeed = 60;
-            return "Snow storm";
+            return GetLevel(LevelEnum.fourth);
         }
         else if (score < 900)
         {
             gameSpeed = 50;
-            return "Blizzard";
+            return GetLevel(LevelEnum.fifth);
         }
         else if (score < 1200)
         {
             gameSpeed = 40;
-            return "Arctic mayhem!";
+            return GetLevel(LevelEnum.sixth);
         }
         else if (score < 1500)
         {
             gameSpeed = 25;
-            return "THUNDER SNOW!";
+            return GetLevel(LevelEnum.seventh);
         }
         else
         {
             gameSpeed = 10;
-            return "»»» ULTRA INSTINCT «««";
+            return GetLevel(LevelEnum.final);
         }
     }
 
     private static void OpenHighScoreManager()
     {
-        // irasomas high score
         HighScoreManager hsm = new HighScoreManager();
         hsm.SetHighScore();
     }
 
-    private static void IfGameOver()
+    private static void IsGameOver()
     {
         if (unitManager.CheckForEndgame())
         {

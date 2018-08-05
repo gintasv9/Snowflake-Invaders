@@ -94,7 +94,7 @@ class GuiController
             keyCode = Console.ReadKey(true).Key.GetHashCode();
         } while (keyCode != 13 && keyCode != 27);
 
-        if (keyCode == 13 || keyCode == 27)         // enter arba ESC
+        if (keyCode == 13 || keyCode == 27)         // enter or ESC
         {
             _creditWindow.IsAlreadyOpen = false;
             ShowMenu();

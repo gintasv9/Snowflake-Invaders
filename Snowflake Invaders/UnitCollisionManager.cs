@@ -37,7 +37,7 @@ class UnitCollisionManager
         {
             foreach (var bullet in bulletList)
             {
-                // OR (bullet.GetY() - 1 == enemyCoord.Y) reikalingas, kad snowflakes ir bullets "neprasilenktu"
+                // || (bullet.GetY() - 1 == enemyCoord.Y) is needed, so that snowflakes and bullets would not pass each other through
                 if (bullet.GetX() == enemyCoord.X && (bullet.GetY() == enemyCoord.Y || bullet.GetY() - 1 == enemyCoord.Y))
                 {
                     bulletList.Remove(bullet);

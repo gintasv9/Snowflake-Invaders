@@ -29,7 +29,7 @@ class Frame : GuiObject
                     Console.Write(_renderChar);
                 }
 
-                // Neleidzia konsoles kursoriui pereiti i tolimesne eilute (issprendzia pirmos ekrano eilutes "nusokimo" problema):
+                // bugfix for console cursor adding a new empty line on frame's corner coord:
                 Console.OutputEncoding = Encoding.GetEncoding(850);
                 Console.SetCursorPosition(_x, _y);
                 Console.MoveBufferArea(_x, _y, 1, 1, _x + _width - 1, _y + _height - 1,

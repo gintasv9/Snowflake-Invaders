@@ -19,7 +19,7 @@ sealed class ExitWindow : Window
 
         ButtonCount = _availableButtons.Count;
 
-        // No! - default pasirinkimas
+        // No! - default option
         _currentButtonActive = 1;
         _availableButtons[_currentButtonActive].SetActive();
     }

@@ -83,7 +83,7 @@ class HighScoreManager
         StreamWriter file = File.CreateText(_path);
         file.Flush();
 
-        // patogiau butu varda ir score issaugoti kaip struct / ir naudoti json
+        // name & score could be saved as struct / json
         var newHighScoreList = from line in attempToHighScore
                                orderby GetScoreFromLine(line) descending
                                select line;

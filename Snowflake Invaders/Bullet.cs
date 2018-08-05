@@ -4,7 +4,7 @@ class Bullet : Unit
 {
     public DateTime CreationTime { get; private set; }
 
-    public Bullet(UnitCoord coord) : base(coord, '▲')   // variantai: '¤', '×'
+    public Bullet(UnitCoord coord) : base(coord, '▲')   // possible symbols: '¤', '×'
     {
         CreationTime = DateTime.Now;
     }

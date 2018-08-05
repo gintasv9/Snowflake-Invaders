@@ -17,7 +17,6 @@ class SnowflakeBoss : IEnemy
         int bossXCoord = _rng.Next(1, GameEngine.GameScreenWidth - 5);
         int bossYCoord = _rng.Next(1, 3);
 
-        // pridedamos (11 - 1) snaigiu suformuoja "*" forma
         //  ***
         // ** **
         //  ***
