@@ -12,7 +12,7 @@ sealed class ExitWindow : Window
 
     public ExitWindow() : base (20, 10, 10, 60, '�')
     {
-        _exitQuestion = new TextLine(_x + 1, 12, _width, "Do you really want to exit this application?");
+        _exitQuestion = new TextLine(_x + 2, 12, _width - 4, "Do you really want to exit this application?");
 
         _availableButtons.Add(new Button(35, 15, 3, 11, "YES"));
         _availableButtons.Add(new Button(55, 15, 3, 11, "NO!"));

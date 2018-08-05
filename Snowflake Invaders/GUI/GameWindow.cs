@@ -19,7 +19,7 @@ class GameWindow
         _screenWidth = width;
         _screenHeight = height;
 
-        _bottomBorder = new TextLine(1, height + 1, width, new string('*', width - 1));
+        _bottomBorder = new TextLine(2, height + 1, width - 2, new string('*', width - 3));
         _gameFrame = new Frame(0, 0, height + 3, width + 1, '▓');
 
         _scoreFrame = new Frame(0, height + 4, 9, width + 1, '█');
@@ -32,7 +32,7 @@ class GameWindow
 
     public bool CanUnitMoveLeft(int x)
     {
-        if (x > 1)
+        if (x > 2)
         {
             return true;
         }
@@ -41,7 +41,7 @@ class GameWindow
 
     public bool CanUnitMoveRight(int x)
     {
-        if (x < _screenWidth - 1)
+        if (x < _screenWidth - 2)
         {
             return true;
         }
@@ -80,7 +80,7 @@ class GameWindow
         string whiteSpace = new string(' ', _screenWidth / 4);
 
         _scoreList = new List<string> { $"{whiteSpace}SCORE: {GameEngine.Score}{whiteSpace}", "", $"{whiteSpace}LEVEL: {GameEngine.Level}{whiteSpace}" };
-        _scoreInfo = new TextBlock(1, _screenHeight + 7, _screenWidth, _scoreList);
+        _scoreInfo = new TextBlock(2, _screenHeight + 7, _screenWidth, _scoreList);
         _scoreInfo.Render(ConsoleColor.Blue);
     }
 }

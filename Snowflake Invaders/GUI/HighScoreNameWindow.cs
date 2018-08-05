@@ -8,7 +8,7 @@ class HighScoreNameWindow : Window
     public HighScoreNameWindow() : base(20, 3, 20, 60, '█')
     {
 
-        _enterPlayerName = new TextLine(20 + 1, 3 + 3, 60 - 2, "Enter your name:");
+        _enterPlayerName = new TextLine(20 + 2, 3 + 3, 60 - 4, "Enter your name:");
 
         _okButton = new Button(40, 12, 7, 20, "Back");
         _okButton.SetActive();

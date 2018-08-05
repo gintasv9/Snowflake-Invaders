@@ -38,10 +38,14 @@ class Frame : GuiObject
             else
             {
                 Console.Write(_renderChar);
-                for (int j = 0; j < _width - 2; j++)
+                Console.Write(_renderChar);
+
+                for (int j = 1; j < _width - 3; j++)
                 {
                     Console.Write(' ');
                 }   
+
+                Console.Write(_renderChar);
                 Console.Write(_renderChar);
             }
         }

@@ -22,7 +22,7 @@ class GameOverWindow : Window
             @" \______| /__/     \__\ |__|  |__| |_______|    \______/      \__/     |_______|| _| `._____|"
         };
 
-        _gameOverText = new TextBlock(1, 3, 100, gameOverMsg);
+        _gameOverText = new TextBlock(2, 3, 98, gameOverMsg);
         _yourScore = new TextLine((100 - 20) / 2, 13, 20, $"Your score: {GameEngine.FinalScore}");
 
         _availableButtons.Add(new Button(8, 15, 7, 20, "Start again!"));

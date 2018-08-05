@@ -24,7 +24,7 @@ sealed class CreditWindow : Window
             "2018 © Vilnius Coding School"
         };
 
-        _creditTextBlock = new TextBlock(20 + 1, 3 + 2, 60 - 2, creditInfo);
+        _creditTextBlock = new TextBlock(20 + 2, 3 + 2, 60 - 4, creditInfo);
 
         _backButton = new Button(40, creditInfo.Count + 6, 3, 20, "Back");
         _backButton.SetActive();

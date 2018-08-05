@@ -30,7 +30,7 @@ class HighScoreWindow : Window
         };
 
 
-        _highScoreText = new TextBlock(1, 2, 100, highScoreMsg);
+        _highScoreText = new TextBlock(2, 2, 100, highScoreMsg);
         _playerScores = new TextBlock((100 - 50) / 2, 11, 50, GetScoreList());
 
         _availableButtons.Add(new Button(8, 15, 7, 20, "Back to menu"));
