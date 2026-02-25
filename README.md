@@ -29,3 +29,11 @@ Typical URL format:
 `https://<your-github-username>.github.io/Snowflake-Invaders/`
 
 (Replace `Snowflake-Invaders` if your repository slug differs.)
+
+### If deployment fails with "Resource not accessible by integration"
+This means the workflow token does not have permission to enable/read Pages for this repository yet.
+
+Fix:
+1. Open **Settings → Pages** and set **Source** to **GitHub Actions**.
+2. If this is an organization repository, ensure org policy allows GitHub Actions to deploy Pages.
+3. Re-run the workflow.
