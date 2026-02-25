@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snowflake Invaders: Web Edition</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <h1>❄️ Snowflake Invaders: Web Edition</h1>
+      <p class="subtitle">Arrow / WASD to move • Space to shoot • Shift to dash • P to pause</p>
+      <section class="hud">
+        <div><span>Score</span><strong id="score">0</strong></div>
+        <div><span>Level</span><strong id="level">Summer in Canada</strong></div>
+        <div><span>Lives</span><strong id="lives">3</strong></div>
+        <div><span>Combo</span><strong id="combo">x1.0</strong></div>
+        <div><span>High Score</span><strong id="highScore">0</strong></div>
+      </section>
+      <canvas id="game" width="960" height="540" aria-label="Snowflake Invaders game area"></canvas>
+      <section class="controls">
+        <button id="startBtn">Start / Restart</button>
+        <button id="muteBtn">Mute SFX</button>
+      </section>
+      <p id="status">Press Start to begin.</p>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
