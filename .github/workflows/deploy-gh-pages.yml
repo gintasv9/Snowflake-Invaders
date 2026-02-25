@@ -1,0 +1,74 @@
+name: Deploy Web Edition to GitHub Pages
+
+on:
+  push:
+    branches: ["main", "master", "work"]
+    paths:
+      - "web/**"
+      - ".github/workflows/deploy-gh-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Preflight - verify Pages is enabled and accessible
+        id: pages_check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.repos.getPages({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              core.setOutput('enabled', 'true');
+              core.notice('GitHub Pages site is enabled and accessible.');
+            } catch (error) {
+              core.setOutput('enabled', 'false');
+              core.setOutput('error', `${error.status || 'unknown'} ${error.message}`);
+              core.warning('GitHub Pages is not accessible for this workflow token.');
+            }
+
+      - name: Stop with actionable setup instructions
+        if: steps.pages_check.outputs.enabled != 'true'
+        run: |
+          echo "❌ GitHub Pages is not accessible from this workflow token." >> "$GITHUB_STEP_SUMMARY"
+          echo "- API error: ${{ steps.pages_check.outputs.error }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Open Settings → Pages and set Source to GitHub Actions." >> "$GITHUB_STEP_SUMMARY"
+          echo "- If your repo is in an org, ensure Actions are allowed to deploy Pages." >> "$GITHUB_STEP_SUMMARY"
+          echo "- Re-run this workflow after the above is configured." >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      - name: Upload static web artifact
+        if: steps.pages_check.outputs.enabled == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+      - name: Deploy to GitHub Pages
+        if: steps.pages_check.outputs.enabled == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Publish deployment URL in summary
+        if: steps.pages_check.outputs.enabled == 'true'
+        run: |
+          echo "### ✅ Snowflake Invaders deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
