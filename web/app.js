@@ -10,6 +10,7 @@ const ui = {
   status: document.getElementById('status'),
   startBtn: document.getElementById('startBtn'),
   muteBtn: document.getElementById('muteBtn'),
+  musicBtn: document.getElementById('musicBtn'),
 };
 
 const levels = [
@@ -24,6 +25,7 @@ const state = {
   running: false,
   paused: false,
   muted: false,
+  musicMuted: false,
   score: 0,
   lives: 3,
   combo: 1,
@@ -45,54 +47,80 @@ const state = {
 };
 
 const keys = new Set();
-const hero = {
-  x: canvas.width / 2,
-  y: canvas.height - 60,
-  radius: 18,
-  speed: 290,
-  color: '#72d9ff',
-  shield: 0,
+const touchState = { up: false, down: false, left: false, right: false };
+const hero = { x: canvas.width / 2, y: canvas.height - 60, radius: 18, speed: 300, shield: 0 };
+
+const audio = {
+  ctx: null,
+  master: null,
+  music: null,
+  musicTimer: null,
+  musicStep: 0,
 };
 
 for (let i = 0; i < 140; i += 1) {
-  state.stars.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    z: Math.random() * 1.5 + 0.3,
-  });
+  state.stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, z: Math.random() * 1.5 + 0.3 });
 }
 
-function resetGame() {
-  state.running = true;
-  state.paused = false;
-  state.score = 0;
-  state.lives = 3;
-  state.combo = 1;
-  state.comboTimer = 0;
-  state.enemySpeed = 70;
-  state.spawnRate = 0.9;
-  state.enemyCooldown = 0;
-  state.bulletCooldown = 0;
-  state.dashCooldown = 0;
-  state.particles = [];
-  state.enemies = [];
-  state.bullets = [];
-  state.powerups = [];
-  state.boss = null;
-  hero.x = canvas.width / 2;
-  hero.y = canvas.height - 60;
-  hero.shield = 0;
-  ui.status.textContent = 'Survive the snowstorm and stack combos!';
-  updateHud();
+function ensureAudio() {
+  if (!audio.ctx) {
+    audio.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    audio.master = audio.ctx.createGain();
+    audio.master.gain.value = 0.18;
+    audio.master.connect(audio.ctx.destination);
+    audio.music = audio.ctx.createGain();
+    audio.music.gain.value = 0.05;
+    audio.music.connect(audio.master);
+  }
+  if (audio.ctx.state === 'suspended') audio.ctx.resume();
+}
+
+function playSfx(freq, duration = 0.06, type = 'triangle', volume = 0.08) {
+  if (state.muted) return;
+  ensureAudio();
+  const osc = audio.ctx.createOscillator();
+  const gain = audio.ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(volume, audio.ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audio.ctx.currentTime + duration);
+  osc.connect(gain).connect(audio.master);
+  osc.start();
+  osc.stop(audio.ctx.currentTime + duration);
+}
+
+function startMusic() {
+  ensureAudio();
+  if (audio.musicTimer) return;
+  const melody = [220, 247, 262, 247, 220, 196, 220, 262];
+  audio.musicTimer = window.setInterval(() => {
+    if (state.musicMuted || !state.running || state.paused) return;
+    const freq = melody[audio.musicStep % melody.length];
+    audio.musicStep += 1;
+    const osc = audio.ctx.createOscillator();
+    const gain = audio.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.value = 0.03;
+    osc.connect(gain).connect(audio.music);
+    osc.start();
+    osc.stop(audio.ctx.currentTime + 0.24);
+  }, 280);
+}
+
+function stopMusic() {
+  if (audio.musicTimer) {
+    clearInterval(audio.musicTimer);
+    audio.musicTimer = null;
+  }
 }
 
 function updateHud() {
   let active = levels[0];
-  for (const lvl of levels) if (state.score >= lvl[0]) active = lvl;
-
+  for (const level of levels) if (state.score >= level[0]) active = level;
   state.levelName = active[1];
-  state.enemySpeed = 60 * active[2];
-  state.spawnRate = 0.85 * active[2];
+  state.enemySpeed = 62 * active[2];
+  state.spawnRate = 0.8 * active[2];
 
   ui.score.textContent = Math.floor(state.score);
   ui.level.textContent = state.levelName;
@@ -101,41 +129,60 @@ function updateHud() {
   ui.highScore.textContent = state.highScore;
 }
 
-function spawnEnemy() {
-  const isFast = Math.random() < 0.22;
+function resetGame() {
+  ensureAudio();
+  startMusic();
+  Object.assign(state, {
+    running: true,
+    paused: false,
+    score: 0,
+    lives: 3,
+    combo: 1,
+    comboTimer: 0,
+    enemySpeed: 70,
+    spawnRate: 0.9,
+    enemyCooldown: 0,
+    bulletCooldown: 0,
+    dashCooldown: 0,
+    particles: [],
+    enemies: [],
+    bullets: [],
+    powerups: [],
+    boss: null,
+  });
+  hero.x = canvas.width / 2;
+  hero.y = canvas.height - 60;
+  hero.shield = 0;
+  ui.status.textContent = 'Snowfall incoming. Survive and build combo!';
+  playSfx(370, 0.08);
+  updateHud();
+}
+
+function spawnEnemy(fromBoss = false, x = null, y = -30) {
+  const fast = Math.random() < 0.22;
   state.enemies.push({
-    x: Math.random() * (canvas.width - 70) + 35,
-    y: -30,
-    r: isFast ? 10 : 14,
-    hp: isFast ? 1 : 2,
-    speed: state.enemySpeed * (isFast ? 1.8 : 1),
+    x: x ?? Math.random() * (canvas.width - 70) + 35,
+    y,
+    r: fast ? 10 : 14,
+    hp: fast ? 1 : 2,
+    speed: state.enemySpeed * (fast ? 1.65 : 1),
     wobble: Math.random() * Math.PI * 2,
+    fromBoss,
   });
 }
 
 function spawnBoss() {
-  state.boss = { x: canvas.width / 2, y: 88, hp: 80, drift: 0, fireCooldown: 0 };
-  ui.status.textContent = '⚠️ Raid boss appeared: Glacier Titan!';
+  state.boss = { x: canvas.width / 2, y: 88, hp: 70, drift: 0, fireCooldown: 0 };
+  ui.status.textContent = '⚠️ Glacier Titan has entered the arena!';
+  playSfx(120, 0.25, 'square', 0.14);
 }
 
 function shoot() {
-  if (state.bulletCooldown > 0) return;
+  if (!state.running || state.paused || state.bulletCooldown > 0) return;
   state.bullets.push({ x: hero.x - 8, y: hero.y - 12, vy: -520, r: 4 });
   state.bullets.push({ x: hero.x + 8, y: hero.y - 12, vy: -520, r: 4 });
-  if (!state.muted) clickSound(540, 0.02);
+  playSfx(540, 0.05);
   state.bulletCooldown = 0.11;
-}
-
-function clickSound(freq, duration) {
-  const actx = new (window.AudioContext || window.webkitAudioContext)();
-  const osc = actx.createOscillator();
-  const gain = actx.createGain();
-  osc.type = 'triangle';
-  osc.frequency.value = freq;
-  gain.gain.value = 0.02;
-  osc.connect(gain).connect(actx.destination);
-  osc.start();
-  osc.stop(actx.currentTime + duration);
 }
 
 function burst(x, y, color, amount = 14) {
@@ -156,8 +203,24 @@ function setGameOver() {
   state.running = false;
   state.highScore = Math.max(state.highScore, Math.floor(state.score));
   localStorage.setItem('snowflake-web-highscore', String(state.highScore));
-  ui.status.textContent = `Game over. Final score ${Math.floor(state.score)}. Tap Start to play again.`;
+  ui.status.textContent = `Game over. Final score ${Math.floor(state.score)}.`;
+  playSfx(100, 0.25, 'sawtooth', 0.14);
   updateHud();
+}
+
+function applyInput(dt) {
+  const left = keys.has('arrowleft') || keys.has('a') || touchState.left;
+  const right = keys.has('arrowright') || keys.has('d') || touchState.right;
+  const up = keys.has('arrowup') || keys.has('w') || touchState.up;
+  const down = keys.has('arrowdown') || keys.has('s') || touchState.down;
+
+  if (left) hero.x -= hero.speed * dt;
+  if (right) hero.x += hero.speed * dt;
+  if (up) hero.y -= hero.speed * dt;
+  if (down) hero.y += hero.speed * dt;
+
+  hero.x = Math.max(hero.radius, Math.min(canvas.width - hero.radius, hero.x));
+  hero.y = Math.max(hero.radius, Math.min(canvas.height - hero.radius, hero.y));
 }
 
 function update(dt) {
@@ -169,44 +232,36 @@ function update(dt) {
   state.comboTimer -= dt;
   if (state.comboTimer <= 0) state.combo = Math.max(1, state.combo - dt * 0.6);
 
-  if (keys.has('arrowleft') || keys.has('a')) hero.x -= hero.speed * dt;
-  if (keys.has('arrowright') || keys.has('d')) hero.x += hero.speed * dt;
-  if (keys.has('arrowup') || keys.has('w')) hero.y -= hero.speed * dt;
-  if (keys.has('arrowdown') || keys.has('s')) hero.y += hero.speed * dt;
-
-  hero.x = Math.max(hero.radius, Math.min(canvas.width - hero.radius, hero.x));
-  hero.y = Math.max(hero.radius, Math.min(canvas.height - hero.radius, hero.y));
+  applyInput(dt);
 
   if (state.enemyCooldown <= 0) {
     spawnEnemy();
-    state.enemyCooldown = Math.max(0.12, 0.85 / state.spawnRate);
+    state.enemyCooldown = Math.max(0.15, 0.95 / state.spawnRate);
   }
 
   if (!state.boss && state.score >= 1200) spawnBoss();
 
   for (const b of state.bullets) b.y += b.vy * dt;
-  state.bullets = state.bullets.filter((b) => b.y > -30);
+  state.bullets = state.bullets.filter((b) => b.y > -30 && !b.dead);
 
   for (const e of state.enemies) {
     e.y += e.speed * dt;
-    e.x += Math.sin((e.y + e.wobble) / 18) * 36 * dt;
+    e.x += Math.sin((e.y + e.wobble) / 18) * 34 * dt;
 
-    if (e.y > canvas.height + 20) {
-      e.dead = true;
-      state.lives -= 1;
-      state.combo = 1;
-      if (state.lives <= 0) setGameOver();
-    }
+    // Bugfix: missed enemies no longer remove lives; only direct collisions damage hero.
+    if (e.y > canvas.height + 30) e.dead = true;
 
-    if (intersects(e, hero, -5)) {
+    if (!e.dead && intersects(e, hero, -4)) {
       e.dead = true;
       if (hero.shield > 0) {
         hero.shield -= 1;
         burst(hero.x, hero.y, '#f4d466', 16);
+        playSfx(280, 0.07, 'square');
       } else {
         state.lives -= 1;
-        burst(hero.x, hero.y, '#ff8a8a', 22);
         state.combo = 1;
+        burst(hero.x, hero.y, '#ff8a8a', 22);
+        playSfx(160, 0.15, 'sawtooth', 0.13);
       }
       if (state.lives <= 0) setGameOver();
     }
@@ -214,22 +269,18 @@ function update(dt) {
 
   for (const e of state.enemies) {
     for (const b of state.bullets) {
-      if (!e.dead && intersects(e, b)) {
+      if (!e.dead && !b.dead && intersects(e, b)) {
         b.dead = true;
         e.hp -= 1;
         if (e.hp <= 0) {
           e.dead = true;
           state.score += 10 * state.combo;
           state.combo = Math.min(4, state.combo + 0.1);
-          state.comboTimer = 2.4;
+          state.comboTimer = 2.2;
           burst(e.x, e.y, '#8bd9ff');
+          playSfx(650, 0.04, 'triangle', 0.06);
           if (Math.random() < 0.08) {
-            state.powerups.push({
-              x: e.x,
-              y: e.y,
-              r: 10,
-              type: Math.random() < 0.5 ? 'shield' : 'multishot',
-            });
+            state.powerups.push({ x: e.x, y: e.y, r: 10, type: Math.random() < 0.5 ? 'shield' : 'multishot' });
           }
         }
       }
@@ -242,20 +293,21 @@ function update(dt) {
       p.dead = true;
       if (p.type === 'shield') {
         hero.shield = Math.min(3, hero.shield + 1);
-        ui.status.textContent = `Shield charged (${hero.shield})`; 
+        ui.status.textContent = `Shield charged (${hero.shield})`;
       } else {
         state.score += 100;
         state.combo = Math.min(4, state.combo + 0.4);
         ui.status.textContent = 'Multishot bonus! +100';
       }
       burst(p.x, p.y, '#f4d466', 20);
+      playSfx(720, 0.09, 'triangle', 0.08);
     }
   }
 
   if (state.boss) {
     const boss = state.boss;
     boss.drift += dt;
-    boss.x = canvas.width / 2 + Math.sin(boss.drift) * 280;
+    boss.x = canvas.width / 2 + Math.sin(boss.drift) * 250;
 
     for (const b of state.bullets) {
       if (!b.dead && intersects({ x: boss.x, y: boss.y, r: 46 }, b)) {
@@ -267,14 +319,18 @@ function update(dt) {
           burst(boss.x, boss.y, '#ffffff', 100);
           state.boss = null;
           ui.status.textContent = 'Boss destroyed! Endless mode unlocked.';
+          playSfx(920, 0.2, 'triangle', 0.12);
+          break;
         }
       }
     }
 
-    boss.fireCooldown -= dt;
-    if (boss.fireCooldown <= 0) {
-      state.enemies.push({ x: boss.x, y: boss.y + 45, r: 11, hp: 1, speed: state.enemySpeed * 1.5, wobble: Math.random() * 3 });
-      boss.fireCooldown = 0.2;
+    if (state.boss) {
+      boss.fireCooldown -= dt;
+      if (boss.fireCooldown <= 0) {
+        spawnEnemy(true, boss.x, boss.y + 40);
+        boss.fireCooldown = 0.35;
+      }
     }
   }
 
@@ -288,7 +344,6 @@ function update(dt) {
 
   state.particles = state.particles.filter((p) => p.life > 0);
   state.enemies = state.enemies.filter((e) => !e.dead);
-  state.bullets = state.bullets.filter((b) => !b.dead);
   state.powerups = state.powerups.filter((p) => !p.dead && p.y < canvas.height + 30);
 
   state.score += dt * 3;
@@ -297,11 +352,10 @@ function update(dt) {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  grad.addColorStop(0, '#09162e');
-  grad.addColorStop(1, '#03060f');
-  ctx.fillStyle = grad;
+  const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  bg.addColorStop(0, '#09162e');
+  bg.addColorStop(1, '#03060f');
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   for (const star of state.stars) {
@@ -327,7 +381,7 @@ function draw() {
   ctx.lineTo(hero.x - 16, hero.y + 18);
   ctx.lineTo(hero.x + 16, hero.y + 18);
   ctx.closePath();
-  ctx.fillStyle = hero.color;
+  ctx.fillStyle = '#72d9ff';
   ctx.shadowBlur = 24;
   ctx.shadowColor = '#84e2ff';
   ctx.fill();
@@ -349,7 +403,7 @@ function draw() {
       else ctx.lineTo(px, py);
     }
     ctx.closePath();
-    ctx.fillStyle = '#d5ecff';
+    ctx.fillStyle = e.fromBoss ? '#f6b2b2' : '#d5ecff';
     ctx.shadowBlur = 15;
     ctx.shadowColor = '#eaf7ff';
     ctx.fill();
@@ -372,7 +426,7 @@ function draw() {
     ctx.fillStyle = '#001630';
     ctx.fillRect(b.x - 40, b.y - 60, 80, 8);
     ctx.fillStyle = '#fe6d6d';
-    ctx.fillRect(b.x - 40, b.y - 60, 80 * (b.hp / 80), 8);
+    ctx.fillRect(b.x - 40, b.y - 60, 80 * (b.hp / 70), 8);
   }
 
   for (const pt of state.particles) {
@@ -383,7 +437,7 @@ function draw() {
   ctx.globalAlpha = 1;
 
   if (state.paused) {
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#e8f4ff';
     ctx.font = 'bold 44px Segoe UI';
@@ -395,16 +449,23 @@ function frame(ts) {
   if (!state.lastTime) state.lastTime = ts;
   const dt = Math.min(0.033, (ts - state.lastTime) / 1000);
   state.lastTime = ts;
-
   update(dt);
   draw();
   requestAnimationFrame(frame);
 }
 
+function triggerDash() {
+  if (!state.running || state.paused || state.dashCooldown > 0) return;
+  const dir = (keys.has('arrowleft') || keys.has('a') || touchState.left) ? -1 : 1;
+  hero.x = Math.max(hero.radius, Math.min(canvas.width - hero.radius, hero.x + dir * 95));
+  state.dashCooldown = 1.5;
+  burst(hero.x, hero.y, '#66f3de', 10);
+  playSfx(430, 0.08, 'square', 0.09);
+}
+
 window.addEventListener('keydown', (e) => {
   const key = e.key.toLowerCase();
   keys.add(key);
-
   if (key === ' ') {
     e.preventDefault();
     shoot();
@@ -413,20 +474,51 @@ window.addEventListener('keydown', (e) => {
     state.paused = !state.paused;
     ui.status.textContent = state.paused ? 'Paused' : 'Back in action';
   }
-  if (key === 'shift' && state.dashCooldown <= 0) {
-    const dir = keys.has('arrowleft') || keys.has('a') ? -1 : 1;
-    hero.x += dir * 95;
-    state.dashCooldown = 1.5;
-    burst(hero.x, hero.y, '#66f3de', 10);
-  }
+  if (key === 'shift') triggerDash();
 });
 
 window.addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
+
+for (const button of document.querySelectorAll('[data-touch]')) {
+  const action = button.dataset.touch;
+  const holdable = ['up', 'down', 'left', 'right', 'shoot'].includes(action);
+
+  const start = (event) => {
+    event.preventDefault();
+    ensureAudio();
+    if (['up', 'down', 'left', 'right'].includes(action)) touchState[action] = true;
+    if (action === 'shoot') shoot();
+    if (action === 'dash') triggerDash();
+    if (action === 'pause') state.paused = !state.paused;
+  };
+
+  const end = (event) => {
+    if (event) event.preventDefault();
+    if (['up', 'down', 'left', 'right'].includes(action)) touchState[action] = false;
+  };
+
+  button.addEventListener('pointerdown', start);
+  if (holdable) {
+    button.addEventListener('pointerup', end);
+    button.addEventListener('pointercancel', end);
+    button.addEventListener('pointerleave', end);
+  }
+}
+
+canvas.addEventListener('pointerdown', (event) => {
+  event.preventDefault();
+  ensureAudio();
+  shoot();
+});
 
 ui.startBtn.addEventListener('click', () => resetGame());
 ui.muteBtn.addEventListener('click', () => {
   state.muted = !state.muted;
   ui.muteBtn.textContent = state.muted ? 'Unmute SFX' : 'Mute SFX';
+});
+ui.musicBtn.addEventListener('click', () => {
+  state.musicMuted = !state.musicMuted;
+  ui.musicBtn.textContent = state.musicMuted ? 'Unmute Music' : 'Mute Music';
 });
 
 updateHud();

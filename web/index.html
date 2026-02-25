@@ -9,7 +9,8 @@
   <body>
     <main class="app">
       <h1>❄️ Snowflake Invaders: Web Edition</h1>
-      <p class="subtitle">Arrow / WASD to move • Space to shoot • Shift to dash • P to pause</p>
+      <p class="subtitle">Arrow / WASD move • Space shoot • Shift dash • P pause • Touch controls on mobile</p>
+
       <section class="hud">
         <div><span>Score</span><strong id="score">0</strong></div>
         <div><span>Level</span><strong id="level">Summer in Canada</strong></div>
@@ -17,11 +18,31 @@
         <div><span>Combo</span><strong id="combo">x1.0</strong></div>
         <div><span>High Score</span><strong id="highScore">0</strong></div>
       </section>
+
       <canvas id="game" width="960" height="540" aria-label="Snowflake Invaders game area"></canvas>
+
       <section class="controls">
         <button id="startBtn">Start / Restart</button>
         <button id="muteBtn">Mute SFX</button>
+        <button id="musicBtn">Mute Music</button>
       </section>
+
+      <section class="touch-controls" aria-label="Mobile controls">
+        <div class="touch-pad">
+          <button data-touch="up">▲</button>
+          <div class="touch-row">
+            <button data-touch="left">◀</button>
+            <button data-touch="down">▼</button>
+            <button data-touch="right">▶</button>
+          </div>
+        </div>
+        <div class="touch-actions">
+          <button data-touch="dash" class="action-btn">Dash</button>
+          <button data-touch="shoot" class="action-btn fire">Fire</button>
+          <button data-touch="pause" class="action-btn">Pause</button>
+        </div>
+      </section>
+
       <p id="status">Press Start to begin.</p>
     </main>
 

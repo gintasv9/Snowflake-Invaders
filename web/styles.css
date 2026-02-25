@@ -1,7 +1,6 @@
 :root {
   color-scheme: dark;
   --panel: rgba(5, 13, 29, 0.72);
-  --accent: #78d4ff;
 }
 
 * { box-sizing: border-box; }
@@ -16,21 +15,9 @@ body {
   color: #e8f4ff;
 }
 
-.app {
-  width: min(1024px, 96vw);
-  padding: 1rem;
-}
-
-h1 {
-  margin: 0;
-  letter-spacing: 0.03em;
-  text-shadow: 0 0 16px rgba(120, 212, 255, 0.45);
-}
-
-.subtitle {
-  margin: 0.2rem 0 0.8rem;
-  color: #b8d9f6;
-}
+.app { width: min(1024px, 96vw); padding: 1rem; }
+h1 { margin: 0; text-shadow: 0 0 16px rgba(120, 212, 255, 0.45); }
+.subtitle { margin: 0.2rem 0 0.8rem; color: #b8d9f6; }
 
 .hud {
   display: grid;
@@ -54,11 +41,13 @@ canvas {
   border: 1px solid rgba(120, 212, 255, 0.4);
   background: linear-gradient(#030710, #050e1d);
   box-shadow: 0 15px 50px rgba(0, 0, 0, 0.45), 0 0 25px rgba(108, 186, 255, 0.18) inset;
+  touch-action: none;
 }
 
 .controls {
   margin-top: 0.8rem;
   display: flex;
+  flex-wrap: wrap;
   gap: 0.6rem;
 }
 
@@ -72,14 +61,44 @@ button {
   cursor: pointer;
 }
 
-#status {
-  min-height: 1.2rem;
-  color: #9cd9ff;
-  margin-top: 0.6rem;
+.touch-controls {
+  margin-top: 0.9rem;
+  display: none;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
+.touch-pad button,
+.touch-actions button {
+  min-width: 64px;
+  min-height: 52px;
+  font-size: 1rem;
+}
+
+.touch-pad {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.touch-row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.touch-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.fire {
+  background: linear-gradient(180deg, #8f3f2c, #632115);
+}
+
+#status { min-height: 1.2rem; color: #9cd9ff; margin-top: 0.6rem; }
+
 @media (max-width: 900px) {
-  .hud {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .hud { grid-template-columns: repeat(2, 1fr); }
+  .touch-controls { display: flex; }
 }
